@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f1f1f">
+<title>GoatList</title>
+<style>
+:root{--bg:#1f1f1f;--bar:#18171c;--card:#1b1a20;--field:#1d1730;--title:#6a3fc4;--btn:color-mix(in srgb,var(--title) 55%,#fff 45%);--mut:#b9b3c7;--red:#b4505f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:600}
+body{padding-top:env(safe-area-inset-top)}
+.page{display:none;max-width:560px;margin:0 auto;padding:12px 14px calc(110px + env(safe-area-inset-bottom))}
+.page.on{display:block}
+.top{display:flex;align-items:center;justify-content:space-between;background:var(--bar);border-radius:22px;padding:14px 20px;margin-bottom:12px}
+.top h1{margin:0;font-size:32px;color:var(--title)}
+.box{background:var(--bar);border-radius:22px;padding:10px;margin-bottom:14px}
+.srow{display:flex;gap:10px;align-items:center}
+.search{flex:1;min-width:0;background:var(--field);border:2px solid #4b4560;border-radius:30px;color:#fff;padding:14px 20px;font-size:17px;outline:none;font-weight:700}
+.sq{width:56px;height:56px;border:0;border-radius:18px;background:var(--field);display:grid;place-items:center;flex:none}
+.chips{display:none;gap:10px;overflow-x:auto;padding:12px 2px 2px}
+.chips.on{display:flex}
+.chip{flex:none;border:0;border-radius:30px;background:var(--btn);color:#fff;font-weight:700;font-size:16px;padding:14px 26px;opacity:.55}
+.chip.sel{opacity:1}
+.card{background:var(--card);border-radius:26px;overflow:hidden;margin-bottom:16px}
+.shot{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:linear-gradient(135deg,#2a2440,#3b2f5c)}
+.body{padding:14px 16px 16px}
+.body h2{margin:0 0 10px;color:var(--title);font-size:26px}
+.r{display:flex;gap:14px;align-items:center;margin:10px 0;font-size:19px;word-break:break-word}
+.r svg{flex:none}
+.more{display:none}.card.open .more{display:block}
+.btn{display:block;width:100%;border:0;border-radius:30px;background:var(--btn);color:#fff;font-weight:700;font-size:17px;padding:15px;text-align:center;text-decoration:none;margin-top:10px}
+.btn.sec{background:#3a3350}.btn.red{background:var(--red)}
+.two{display:flex;gap:10px}
+.empty{text-align:center;color:var(--mut);padding:50px 10px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--bar);display:flex;justify-content:space-around;padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:6}
+.nav button{border:0;background:none;color:#fff;font-weight:800;font-size:19px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 30px;letter-spacing:1px}
+.nav button i{display:grid;place-items:center;width:68px;height:44px;border-radius:22px}
+.nav button.on i{background:#3b3550}
+h1.big{font-size:44px;margin:14px 4px 18px}
+.set{background:#000;border-radius:26px;padding:18px;margin-bottom:16px}
+.set h3{margin:0 0 12px;color:var(--title);font-size:26px}
+.prof{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+.prof b{display:block;color:var(--title);font-size:24px}
+.sw{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.sw button,.sw input{width:46px;height:46px;border-radius:50%;border:3px solid transparent;padding:0}
+.sw button.sel{border-color:#fff}
+.sw input{background:none;border:3px dashed #888}
+.fxs{display:flex;gap:10px;flex-wrap:wrap}
+.fxs .chip{padding:14px 22px}
+.ver{display:block;text-align:center;color:var(--mut);font-weight:800;letter-spacing:1px;padding:22px 10px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+#splash,#welcome{position:fixed;inset:0;background:var(--bg);z-index:30}
+#splash{display:grid;place-items:center;transition:opacity .4s}
+#splash svg{animation:pu 1.2s infinite alternate}
+@keyframes pu{from{opacity:.35}to{opacity:1}}
+#welcome{display:none;padding:70px 22px 30px;overflow:hidden}
+#welcome h1{font-size:54px;margin:0 0 110px;line-height:1.1}
+#welcome p{font-size:24px;line-height:1.3;margin:0}
+.blob{position:absolute;left:-200px;width:560px;height:400px;border-radius:50%;background:var(--btn);opacity:.35}
+#welcome .bt{position:absolute;left:20px;right:20px;bottom:24px;z-index:2}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal.on{display:flex}
+.sheet{background:#25232d;width:100%;max-width:520px;max-height:90vh;overflow:auto;border-radius:28px;padding:22px 20px}
+.sheet h3{margin:0 0 14px;font-size:24px}
+.sheet label{display:block;color:var(--mut);font-size:14px;margin:12px 0 6px}
+.sheet input,.sheet textarea,.sheet select{width:100%;background:var(--field);border:2px solid #4b4560;border-radius:18px;color:#fff;padding:12px 16px;font-size:16px;outline:none;font-family:inherit}
+.sheet textarea{min-height:90px}
+.sheet .txt{white-space:pre-wrap;line-height:1.6;font-size:18px;word-break:break-word}
+.prev{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:18px;margin-top:8px;display:none}
+.err{color:#ff8a98;min-height:20px;margin-top:8px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#3a3350;padding:12px 20px;border-radius:20px;display:none;z-index:40}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:5}
+.pr{display:flex;gap:14px;align-items:center;border:3px solid transparent;border-radius:24px;background:#221d33;padding:16px;margin-bottom:12px;font-size:19px}
+.pr.ok{border-color:#9be15d}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<div id="splash"><svg width="96" height="96" viewBox="0 0 34 34" fill="none" stroke="#6a3fc4" stroke-width="1.4" stroke-linecap="round"><path d="M25.3 9.8A11 11 0 1 0 28 17H18"/><path d="M22.7 12.1A7.5 7.5 0 1 0 24.5 17H18"/><path d="M20 14.4A4 4 0 1 0 21 17H18"/></svg></div>
+
+<div id="welcome">
+  <div class="blob" style="bottom:-120px"></div><div class="blob" style="bottom:-40px;opacity:.25"></div>
+  <h1>Welcome!</h1>
+  <p>Добро пожаловать в GoatList! Здесь собраны полезные программы и файлы. Найдите то, что нужно. Приятного пользования!</p>
+  <div class="bt"><button class="btn" id="chBtn" style="display:none">GOATLIST CHANNEL</button><button class="btn" id="goBtn">CONTINUE</button></div>
+</div>
+
+<!-- Библиотека -->
+<div class="page on" id="pLib">
+  <div class="top"><h1>GoatList</h1><svg width="40" height="40" viewBox="0 0 34 34" fill="none" stroke="var(--title)" stroke-width="1.8" stroke-linecap="round"><path d="M25.3 9.8A11 11 0 1 0 28 17H18"/><path d="M22.7 12.1A7.5 7.5 0 1 0 24.5 17H18"/></svg></div>
+  <div class="box">
+    <div class="srow"><input id="q" class="search" type="search" placeholder="Search..."><button class="sq" id="fBtn"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"><path d="M3 4h18l-7 8v7l-4 2v-9z"/></svg></button></div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div id="adminbar" class="box" style="display:none"><div style="color:#cbb7f5;margin:6px 8px">Режим админа</div><div class="two"><button class="btn" id="addBtn">+ Добавить</button><button class="btn sec" id="exitBtn">Выйти</button></div></div>
+  <div id="list"></div>
+</div>
+
+<!-- Настройки -->
+<div class="page" id="pSet">
+  <h1 class="big">Settings</h1>
+  <div class="set">
+    <div class="prof"><svg width="70" height="70" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2 7 7 3-7 3-2 7-2-7-7-3 7-3z"/></svg><div><b id="nick">GoatList User</b><span id="loveTxt">I love GoatList ❤</span></div></div>
+    <button class="btn" id="nickBtn">EDIT PROFILE</button>
+  </div>
+  <div class="set">
+    <h3 id="hCol">Color</h3>
+    <div class="sw" id="sw"></div>
+    <h3 id="hFx" style="margin-top:18px">Effects</h3>
+    <div class="fxs" id="fxs"></div>
+  </div>
+  <div class="set">
+    <h3 id="hSize">Interface size</h3>
+    <div class="two"><button class="btn sec" id="zOut" style="margin:0">A−</button><div id="zVal" style="align-self:center;min-width:80px;text-align:center;font-size:20px">80%</div><button class="btn sec" id="zIn" style="margin:0">A+</button></div>
+    <h3 id="hLang" style="margin-top:18px">Language</h3><div class="fxs" id="langs"></div>
+    <button class="btn" id="permBtn" style="margin-top:18px">Permissions</button>
+  </div>
+  <div class="set" id="chSet" style="display:none"><a class="btn" id="chLink" target="_blank" rel="noopener noreferrer" style="margin:0">GOATLIST CHANNEL</a></div>
+  <span class="ver" id="ver">GoatList - 1.0 Release</span>
+</div>
+
+<div class="nav">
+  <button class="on" data-p="pLib"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M12 7l-6 14M12 7l6 14M8 15h8"/></svg></i><span id="nL">Library</span></button>
+  <button data-p="pSet"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></i><span id="nS">Settings</span></button>
+</div>
+
+<div class="modal" id="mInfo"><div class="sheet"><h3 id="iTitle"></h3><div class="txt" id="iBody"></div><button class="btn sec" data-close>Continue</button></div></div>
+<div class="modal" id="mPass"><div class="sheet"><h3>Админ-панель</h3><label>Пароль</label><input id="pass" type="password" autocomplete="off"><div class="err" id="passErr"></div><button class="btn" id="passOk">Войти</button><button class="btn sec" data-close>Отмена</button></div></div>
+<div class="modal" id="mForm"><div class="sheet">
+  <h3 id="fTitle">Добавить</h3>
+  <label>Название</label><input id="fName">
+  <label>Описание</label><textarea id="fDesc"></textarea>
+  <label>Версия</label><input id="fVer" placeholder="1.0.0">
+  <label>Платформа</label><select id="fPlat"><option>Android</option><option>Windows</option><option>iOS</option><option>Other</option></select>
+  <label>Функции (каждая с новой строки)</label><textarea id="fFuncs"></textarea>
+  <label>Ссылка на файл</label><input id="fLink" inputmode="url" placeholder="https://...">
+  <label>Фото</label><input id="fPhoto" type="file" accept="image/*"><img class="prev" id="fPrev" alt="">
+  <div class="err" id="fErr"></div>
+  <button class="btn" id="fSave">Сохранить</button><button class="btn sec" data-close>Отмена</button>
+</div></div>
+<div class="modal" id="mPerm"><div class="sheet"><h3 id="pmTitle" style="color:var(--title)">Permissions required!</h3><div id="pmList"></div><div class="txt" id="pmNote" style="font-size:15px;color:var(--mut)"></div><button class="btn" id="pmCheck">Check</button><button class="btn sec" data-close id="pmLater">Later</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== НАСТРОЙКИ GITHUB =====
+const GITHUB_TOKEN = "Ghp_vJiwQy8tTtpvmVjzmJyXkBxgF5MD6T3aLxtg";
+const GITHUB_REPO = "Popka22867/goatlist";
+const GITHUB_PATH = "files/database.json";
+const CHANNEL_URL = "";     
+const PASSWORDS = ["golda", "голда"];
+const TAPS_NEEDED = 8, HOLD_MS = 5000;
+const COLORS = ["#6a3fc4", "#3b82f6", "#22c55e", "#ef4444", "#ec4899", "#f59e0b", "#14b8a6"];
+const EFFECTS = ["None", "Rain", "Snow", "Stars", "Sparks"];
+const PLATS = ["All", "Android", "Windows", "iOS", "Other"];
+// =====================
+
+const $ = s => document.querySelector(s);
+const sv = p => `<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/>',
+  ver: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+  plat: '<circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M12 9v3M10 13.5l-3.5 2.5M14 13.5l3.5 2.5"/>'
+};
+let items = [], admin = false, editing = null, photoData = null, filt = "All";
+let cfg = { color: COLORS[0], fx: "None", nick: "GoatList User", zoom: 0.8, lang: (navigator.language || "en").toLowerCase().startsWith("ru") ? "ru" : "en" };
+try { Object.assign(cfg, JSON.parse(localStorage.getItem("gl_cfg") || "{}")); } catch {}
+
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",2400);}
+function el(tag, props = {}, kids = []) { const e = document.createElement(tag); Object.assign(e, props); [].concat(kids).forEach(k => e.append(k)); return e; }
+const safeUrl = u => /^https?:\/\/\S+$/i.test(u);
+const saveCfg = () => { try { localStorage.setItem("gl_cfg", JSON.stringify(cfg)); } catch {} };
+
+// ---------- РАБОТА С GITHUB ----------
+async function load() {
+    try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+            headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const jsonString = decodeURIComponent(escape(atob(data.content)));
+            items = JSON.parse(jsonString);
+        } else {
+            items = [];
+        }
+    } catch (err) {
+        console.error("Ошибка загрузки:", err);
+        toast("Нет связи с GitHub");
+        items = [];
+    }
+    items.sort((a, b) => b.t - a.t);
+    render();
+}
+
+async function uploadFileToGitHub(fileObj, customName) {
+    const fileName = customName || `file_${Date.now()}_${fileObj.name || 'image.jpg'}`;
+    const filePath = `files/${fileName}`;
+    
+    const base64Content = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(fileObj);
+    });
+
+    let sha = null;
+    const checkRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`, {
+        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+    });
+    if (checkRes.ok) {
+        const fileData = await checkRes.json();
+        sha = fileData.sha;
+    }
+
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`, {
+        method: "PUT",
+        headers: {
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: `Upload ${fileName} via GoatList`,
+            content: base64Content,
+            sha: sha
+        })
+    });
+
+    if (!res.ok) throw new Error("Не удалось загрузить файл на GitHub");
+    const result = await res.json();
+    return result.content.download_url;
+}
+
+async function saveDatabaseToGitHub() {
+    let sha = null;
+    const checkRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+        headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+    });
+    if (checkRes.ok) {
+        const fileData = await checkRes.json();
+        sha = fileData.sha;
+    }
+
+    const jsonString = JSON.stringify(items, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+        method: "PUT",
+        headers: {
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: "Update database.json via GoatList",
+            content: base64Content,
+            sha: sha
+        })
+    });
+
+    if (!res.ok) throw new Error("Не удалось сохранить базу данных");
+}
+
+async function putItem(it) {
+    const i = items.findIndex(x => x.id === it.id);
+    if (i < 0) items.unshift(it);
+    else items[i] = it;
+
+    await saveDatabaseToGitHub();
+}
+
+async function delItem(id) {
+    items = items.filter(x => x.id !== id);
+    await saveDatabaseToGitHub();
+}
+
+// ---------- заставка и приветствие ----------
+setTimeout(() => {
+  $("#splash").style.opacity = 0;
+  setTimeout(() => $("#splash").remove(), 400);
+  let seen = false; try { seen = localStorage.getItem("gl_seen"); } catch {}
+  if (!seen) $("#welcome").style.display = "block";
+}, 1500);
+$("#goBtn").onclick = () => { $("#welcome").remove(); try { localStorage.setItem("gl_seen", 1); } catch {} openPerm(); };
+if (CHANNEL_URL) { $("#chBtn").style.display = "block"; $("#chBtn").onclick = () => window.open(CHANNEL_URL, "_blank"); $("#chSet").style.display = "block"; $("#chLink").href = CHANNEL_URL; }
+
+// ---------- навигация ----------
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === b.dataset.p));
+  scrollTo(0, 0);
+});
+
+// ---------- библиотека ----------
+const row = (ic, t) => el("div", { className: "r" }, [el("span", { innerHTML: sv(IC[ic]) }), el("span", { textContent: t })]);
+function showInfo(title, text) { $("#iTitle").textContent = title; $("#iBody").textContent = text; $("#mInfo").classList.add("on"); }
+
+function render() {
+  const q = $("#q").value.trim().toLowerCase(), box = $("#list");
+  box.replaceChildren();
+  const shown = items.filter(i => (filt === "All" || i.plat === filt) && (!q || (i.name + " " + i.desc).toLowerCase().includes(q)));
+  if (!shown.length) box.append(el("div", { className: "empty", textContent: items.length ? t("nf") : t("no") }));
+  shown.forEach(it => {
+    const card = el("div", { className: "card" });
+    card.append(it.photo ? el("img", { className: "shot", src: it.photo, alt: "" }) : el("div", { className: "shot" }));
+    const more = el("div", { className: "more" }, [
+      el("div", { className: "two" }, [
+        el("button", { className: "btn", textContent: t("fn"), onclick: e => { e.stopPropagation(); showInfo(it.name + " " + t("fnl"), (it.funcs || []).map(f => "• " + f).join("\n") || t("nfn")); } }),
+        el("button", { className: "btn", textContent: t("mr"), onclick: e => { e.stopPropagation(); showInfo(it.name, it.desc || t("nd")); } })
+      ]),
+      el("a", { className: "btn", textContent: t("dl"), href: it.link, target: "_blank", rel: "noopener noreferrer", onclick: e => e.stopPropagation() })
+    ]);
+    const body = el("div", { className: "body" }, [
+      el("h2", { textContent: it.name }),
+      row("info", (it.desc || "").split("\n")[0].slice(0, 80)),
+      row("ver", it.ver || "-"), row("plat", it.plat || "Other"), more
+    ]);
+    if (admin) body.append(el("div", { className: "two" }, [
+      el("button", { className: "btn sec", textContent: "Изменить", onclick: e => { e.stopPropagation(); openForm(it); } }),
+      el("button", { className: "btn red", textContent: "Удалить", onclick: e => { e.stopPropagation(); remove(it); } })
+    ]));
+    card.onclick = () => card.classList.toggle("open");
+    card.append(body); box.append(card);
+  });
+  $("#adminbar").style.display = admin ? "block" : "none";
+}
+$("#q").oninput = render;
+$("#fBtn").onclick = () => $("#chips").classList.toggle("on");
+function buildChips() {
+  PLATS.forEach(p => $("#chips").append(el("button", { className: "chip" + (p === filt ? " sel" : ""), textContent: p === "All" ? t("all") : p, onclick: e => {
+    filt = p; document.querySelectorAll("#chips .chip").forEach(c => c.classList.toggle("sel", c === e.target)); render(); } })));
+}
+
+// ---------- настройки: цвет и эффекты ----------
+let accent = cfg.color;
+function applyColor(c) { cfg.color = accent = c; document.documentElement.style.setProperty("--title", c); saveCfg(); document.querySelectorAll("#sw button").forEach(b => b.classList.toggle("sel", b.dataset.c === c)); }
+COLORS.forEach(c => { const b = el("button", { onclick: () => applyColor(c) }); b.style.background = c; b.dataset.c = c; $("#sw").append(b); });
+$("#sw").append(el("input", { type: "color", value: cfg.color, title: "Свой цвет", oninput: e => applyColor(e.target.value) }));
+function buildFx() {
+  EFFECTS.forEach(f => $("#fxs").append(el("button", { className: "chip" + (cfg.fx === f ? " sel" : ""), textContent: t(f), onclick: e => {
+    document.querySelectorAll("#fxs .chip").forEach(c => c.classList.toggle("sel", c === e.target)); setFx(f); cfg.fx = f; saveCfg(); } })));
+}
+$("#nickBtn").onclick = () => { const n = prompt(t("nick"), cfg.nick); if (n && n.trim()) { cfg.nick = n.trim().slice(0, 24); $("#nick").textContent = cfg.nick; saveCfg(); } };
+$("#nick").textContent = cfg.nick;
+
+const cv = $("#fx"), cx = cv.getContext("2d");
+let fx = "None", ps = [];
+function rs() { cv.width = innerWidth; cv.height = innerHeight; }
+addEventListener("resize", rs); rs();
+const mk = (rand, up) => ({ x: Math.random() * cv.width, y: rand ? Math.random() * cv.height : (up ? cv.height + 10 : -10), v: Math.random() * 3 + 2, s: Math.random() * 2 + 1, p: Math.random() * 6 });
+function setFx(f) { fx = f; cx.clearRect(0, 0, cv.width, cv.height); const n = { Rain: 90, Snow: 70, Stars: 60, Sparks: 50 }[f] || 0; ps = Array.from({ length: n }, () => mk(true)); }
+function tick() {
+  if (fx !== "None") {
+    const W = cv.width, H = cv.height; cx.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      if (fx === "Rain") { p.y += p.v * 4; p.x -= 1; cx.strokeStyle = accent; cx.globalAlpha = .55; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x - 2, p.y + 14); cx.stroke(); if (p.y > H) Object.assign(p, mk(false)); }
+      else if (fx === "Snow") { p.y += p.v * .4; p.p += .02; p.x += Math.sin(p.p) * .6; cx.fillStyle = "#fff"; cx.globalAlpha = .8; cx.beginPath(); cx.arc(p.x, p.y, p.s, 0, 6.3); cx.fill(); if (p.y > H) Object.assign(p, mk(false)); }
+      else if (fx === "Stars") { p.p += .03; cx.fillStyle = "#fff"; cx.globalAlpha = .25 + .75 * Math.abs(Math.sin(p.p)); cx.beginPath(); cx.arc(p.x, p.y, p.s * .7, 0, 6.3); cx.fill(); }
+      else { p.y -= p.v * .6; p.x += Math.sin(p.y / 30) * .5; cx.fillStyle = accent; cx.globalAlpha = Math.max(0, p.y / H); cx.beginPath(); cx.arc(p.x, p.y, p.s, 0, 6.3); cx.fill(); if (p.y < 0) Object.assign(p, mk(false, true)); }
+    }
+    cx.globalAlpha = 1;
+  }
+  requestAnimationFrame(tick);
+}
+applyColor(cfg.color); setFx(cfg.fx); tick();
+
+// ---------- скрытый вход: 8 нажатий или удержание 5 секунд на «GoatList - 1.0» ----------
+(() => {
+  const v = $("#ver"); let taps = 0, tt, ht;
+  v.oncontextmenu = e => e.preventDefault();
+  v.onclick = () => { taps++; clearTimeout(tt); tt = setTimeout(() => taps = 0, 2500); if (taps >= TAPS_NEEDED) { taps = 0; openPass(); } };
+  v.onpointerdown = () => { clearTimeout(ht); ht = setTimeout(openPass, HOLD_MS); };
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => v.addEventListener(ev, () => clearTimeout(ht)));
+})();
+const closeModals = () => document.querySelectorAll(".modal").forEach(m => m.classList.remove("on"));
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = closeModals);
+function openPass() { $("#pass").value = ""; $("#passErr").textContent = ""; $("#mPass").classList.add("on"); setTimeout(() => $("#pass").focus(), 50); }
+function tryPass() {
+  if (PASSWORDS.includes($("#pass").value.trim().toLowerCase())) {
+    admin = true; closeModals(); render(); toast("Админ-панель открыта");
+    document.querySelector('.nav button[data-p="pLib"]').click();
+  } else $("#passErr").textContent = "Неверный пароль";
+}
+$("#passOk").onclick = tryPass;
+$("#pass").onkeydown = e => e.key === "Enter" && tryPass();
+$("#exitBtn").onclick = () => { admin = false; render(); };
+
+// ---------- добавить / изменить / удалить ----------
+function openForm(it) {
+  editing = it || null; photoData = null;
+  $("#fTitle").textContent = it ? "Изменить" : "Добавить";
+  $("#fName").value = it ? it.name : ""; $("#fDesc").value = it ? it.desc : ""; $("#fVer").value = it ? it.ver : "";
+  $("#fPlat").value = it ? it.plat : "Android"; $("#fFuncs").value = it ? (it.funcs || []).join("\n") : "";
+  $("#fLink").value = it ? it.link : ""; $("#fPhoto").value = ""; $("#fErr").textContent = "";
+  const p = $("#fPrev"); p.style.display = it && it.photo ? "block" : "none"; p.src = it && it.photo ? it.photo : "";
+  $("#mForm").classList.add("on");
+}
+$("#addBtn").onclick = () => openForm(null);
+function shrink(file, max = 720) {
+  return new Promise((ok, no) => {
+    const im = new Image(), u = URL.createObjectURL(file);
+    im.onload = () => { const k = Math.min(1, max / im.width), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", .75)); };
+    im.onerror = no; im.src = u;
+  });
+}
+$("#fPhoto").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { photoData = await shrink(f); $("#fPrev").src = photoData; $("#fPrev").style.display = "block"; } catch { $("#fErr").textContent = "Не удалось открыть фото"; }
+};
+$("#fSave").onclick = async () => {
+  const name = $("#fName").value.trim(), link = $("#fLink").value.trim();
+  if (!name) return $("#fErr").textContent = "Введите название";
+  if (!safeUrl(link)) return $("#fErr").textContent = "Ссылка должна начинаться с http:// или https://";
+  
+  toast("Сохранение на GitHub...");
+  try {
+    let finalPhoto = editing ? editing.photo : "";
+    if (photoData) {
+      // Конвертируем Base64 обратно в файл для загрузки в папку files/ на GitHub
+      const resBlob = await fetch(photoData);
+      const blob = await resBlob.blob();
+      finalPhoto = await uploadFileToGitHub(blob, `img_${Date.now()}.jpg`);
+    }
+
+    const f = {
+      name, link, desc: $("#fDesc").value.trim(), ver: $("#fVer").value.trim(), plat: $("#fPlat").value,
+      funcs: $("#fFuncs").value.split("\n").map(x => x.trim()).filter(Boolean)
+    };
+    const it = editing ? { ...editing, ...f, photo: finalPhoto }
+                       : { id: Date.now().toString(36), t: Date.now(), ...f, photo: finalPhoto };
+    await putItem(it); 
+    items.sort((a, b) => b.t - a.t); 
+    closeModals(); 
+    render(); 
+    toast("Успешно сохранено!");
+  } catch (err) {
+    console.error(err);
+    $("#fErr").textContent = "Ошибка сохранения на GitHub";
+  }
+};
+
+async function remove(it) {
+  if (!confirm(`Удалить «${it.name}»?`)) return;
+  try { await delItem(it.id); render(); toast("Удалено"); } catch { toast("Не удалось удалить"); }
+}
+
+// ---------- язык, размер интерфейса, разрешения ----------
+const I = {
+  en: { wT: "Welcome!", wX: "Welcome to GoatList! Useful programs and files are collected here. Find what you need. Enjoy!", ch: "GOATLIST CHANNEL", go: "CONTINUE", sr: "Search...", nL: "Library", nS: "Settings", st: "Settings", ep: "EDIT PROFILE", lv: "I love GoatList ❤", col: "Color", fxT: "Effects", sz: "Interface size", lg: "Language", pm: "Permissions", all: "All", nf: "Nothing found", no: "Nothing here yet", fn: "Functions", fnl: "functions", nfn: "Not specified", mr: "More info", nd: "No description", dl: "Download", ct: "Close", nick: "Your nickname",
+    None: "None", Rain: "Rain", Snow: "Snow", Stars: "Stars", Sparks: "Sparks",
+    pT: "Permissions required!", pNotif: "Notifications", pStore: "Storage", pBg: "Background work", pNt: "Tap an item to allow it. Storage and background work are fully available in the installed Android app.", pC: "Check", pL: "Later", pOk: "All permissions granted", pNo: "Available only in the installed app" },
+  ru: { wT: "Добро пожаловать!", wX: "Добро пожаловать в GoatList! Здесь собраны полезные программы и файлы. Найдите то, что нужно. Приятного пользования!", ch: "КАНАЛ GOATLIST", go: "ПРОДОЛЖИТЬ", sr: "Поиск...", nL: "Библиотека", nS: "Настройки", st: "Настройки", ep: "ИЗМЕНИТЬ ПРОФИЛЬ", lv: "Я люблю GoatList ❤", col: "Цвет", fxT: "Эффекты", sz: "Размер интерфейса", lg: "Язык", pm: "Разрешения", all: "Все", nf: "Ничего не найдено", no: "Пока пусто", fn: "Функции", fnl: "функции", nfn: "Не указаны", mr: "Подробнее", nd: "Нет описания", dl: "Скачать", ct: "Закрыть", nick: "Ваш ник",
+    None: "Нет", Rain: "Дождь", Snow: "Снег", Stars: "Звёзды", Sparks: "Искры",
+    pT: "Нужны разрешения!", pNotif: "Уведомления", pStore: "Хранилище", pBg: "Фоновая работа", pNt: "Нажмите на пункт, чтобы разрешить. Хранилище и фоновая работа полностью доступны в установленном Android-приложении.", pC: "Проверить", pL: "Позже", pOk: "Все разрешения выданы", pNo: "Доступно только в установленном приложении" }
+};
+const t = k => (I[cfg.lang] && I[cfg.lang][k]) || I.en[k] || k;
+const SEL = { "#welcome h1": "wT", "#welcome p": "wX", "#chBtn": "ch", "#chLink": "ch", "#goBtn": "go", "#nL": "nL", "#nS": "nS", "#pSet h1.big": "st", "#nickBtn": "ep", "#loveTxt": "lv", "#hCol": "col", "#hFx": "fxT", "#hSize": "sz", "#hLang": "lg", "#permBtn": "pm", "#mInfo .btn": "ct", "#pmTitle": "pT", "#pmNote": "pNt", "#pmCheck": "pC", "#pmLater": "pL" };
+function applyLang() {
+  for (const s in SEL) document.querySelectorAll(s).forEach(e => e.textContent = t(SEL[s]));
+  $("#q").placeholder = t("sr");
+  $("#chips").replaceChildren(); buildChips();
+  $("#fxs").replaceChildren(); buildFx();
+  $("#langs").replaceChildren();
+  [["en", "English"], ["ru", "Русский"]].forEach(([c, n]) => $("#langs").append(el("button", { className: "chip" + (cfg.lang === c ? " sel" : ""), textContent: n, onclick: () => { cfg.lang = c; saveCfg(); applyLang(); } })));
+  render(); drawPerms();
+}
+
+const ZL = [0.6, 0.7, 0.8, 0.9, 1, 1.1];
+function applyZoom() { document.documentElement.style.zoom = cfg.zoom; $("#zVal").textContent = Math.round(cfg.zoom * 100) + "%"; saveCfg(); }
+function stepZoom(d) { let i = ZL.findIndex(z => Math.abs(z - cfg.zoom) < .01); if (i < 0) i = 2; cfg.zoom = ZL[Math.max(0, Math.min(ZL.length - 1, i + d))]; applyZoom(); }
+$("#zOut").onclick = () => stepZoom(-1); $("#zIn").onclick = () => stepZoom(1); applyZoom();
+
+const PERMS = [
+  { k: "pNotif", ok: async () => "Notification" in window && Notification.permission === "granted", req: async () => { if (!("Notification" in window)) throw 0; await Notification.requestPermission(); } },
+  { k: "pStore", ok: async () => !!(navigator.storage && navigator.storage.persisted && await navigator.storage.persisted()), req: async () => { if (!(navigator.storage && navigator.storage.persist)) throw 0; await navigator.storage.persist(); } },
+  { k: "pBg", ok: async () => (await navigator.permissions.query({ name: "periodic-background-sync" })).state === "granted", req: async () => { throw 0; } }
+];
+async function drawPerms() {
+  const box = $("#pmList"); let all = true; const rows = [];
+  for (const p of PERMS) {
+    let ok = false; try { ok = await p.ok(); } catch {}
+    if (!ok) all = false;
+    rows.push(el("div", { className: "pr" + (ok ? " ok" : ""), onclick: async () => { try { await p.req(); } catch { toast(t("pNo")); } drawPerms(); } }, [el("span", { textContent: ok ? "✔" : "☝" }), el("span", { textContent: t(p.k) })]));
+  }
+  box.replaceChildren(...rows); return all;
+}
+function openPerm() { drawPerms(); $("#mPerm").classList.add("on"); }
+$("#permBtn").onclick = openPerm;
+$("#pmCheck").onclick = async () => { if (await drawPerms()) { closeModals(); toast(t("pOk")); } };
+
+applyLang(); load();
+</script>
+</body>
+</html>
+
